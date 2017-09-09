@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
     # within the machine from a port on the host machine. In the example below,
     # accessing "localhost:8080" will access port 80 on the guest machine.
     # NOTE: This will enable public access to the opened port
-    db.vm.network "forwarded_port", guest: 5432, host: 5432
+    db.vm.network "forwarded_port", guest: 5432, host: 2432
 
     # Create a private network, which allows host-only access to the machine
     # using a specific IP.
@@ -39,7 +39,7 @@ Vagrant.configure("2") do |config|
     # Provider-specific configuration so you can fine-tune various
     # backing providers for Vagrant. These expose provider-specific options.
     # Example for VirtualBox:
-    db.vm.provider "virtualbox" do |vb|
+    db.vm.provider "virtualbox" do |vb1|
       vb1.name = "dj-databases"
 
       # Display the VirtualBox GUI when booting the machine
@@ -65,5 +65,27 @@ Vagrant.configure("2") do |config|
       sudo service postgresql restart
     SHELL
   end
-  
+
+
+# Web
+  config.vm.define "web" do |web|
+    web.vm.box = "ubuntu/trusty64"
+    web.vm.network "forwarded_port", guest:8000, host:8000
+    web.vm.network "private_network", ip: "192.168.1.10"
+
+    web.vm.provider "virtualbox" do |vb2|
+      vb2.name = "dj"
+      vb2.gui = false
+      vb2.memory = "512"
+      vb2.cpus = 1
+    end
+
+    web.vm.provision "shell", inline: <<-SHELL
+      apt-get update
+      apt-get install -y vim git
+      sudo apt-get install -y python-pip python-dev libpq-dev postgresql postgresql-contrib
+      sudo pip install django flake8 psycopg2
+    SHELL
+  end
+
 end
